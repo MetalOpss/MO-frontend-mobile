@@ -1,74 +1,81 @@
 package com.example.metalops.ui
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.People
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
+
+data class BottomNavItem(
+    val route: String,
+    val label: String,
+    val icon: androidx.compose.ui.graphics.vector.ImageVector
+)
 
 @Composable
-fun BottomBar() {
-    BottomAppBar(
-        containerColor = Color.White,
-        contentColor = Color.Gray,
-        modifier = Modifier.fillMaxWidth()
+fun BottomBar(navController: NavController) {
+    val items = listOf(
+        BottomNavItem("home", "Inicio", Icons.Default.Home),
+        BottomNavItem("clientes", "Clientes", Icons.Default.People),
+        BottomNavItem("ots", "OT's", Icons.Default.List)
+    )
+
+    NavigationBar(
+        containerColor = Color(0xFFF8F8F8),
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            BottomBarItem(
-                icon = Icons.Filled.Home,
-                label = "Inicio",
-                isSelected = true
-            )
+        val navBackStackEntry by navController.currentBackStackEntryAsState()
+        val currentRoute = navBackStackEntry?.destination?.route
 
-            BottomBarItem(
-                icon = Icons.Filled.Person,
-                label = "Clientes",
-                isSelected = false
-            )
+        items.forEach { item ->
+            val isSelected = currentRoute == item.route
 
-            BottomBarItem(
-                icon = Icons.Filled.List, // ✅ Usa ListAlt, no List (evita deprecated)
-                label = "OT's",
-                isSelected = false
+            NavigationBarItem(
+                selected = isSelected,
+                onClick = {
+                    if (currentRoute != item.route) {
+                        navController.navigate(item.route) {
+                            popUpTo("home") { inclusive = false }
+                            launchSingleTop = true
+                        }
+                    }
+                },
+                icon = {
+                    if (isSelected) {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp) // tamaño fijo de la bolita
+                                .background(Color(0xFF295FAB), CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                item.icon,
+                                contentDescription = item.label,
+                                tint = Color.White
+                            )
+                        }
+                    } else {
+                        Icon(item.icon, contentDescription = item.label, tint = Color.Gray)
+                    }
+                },
+                label = {
+                    Text(
+                        text = item.label,
+                        color = if (isSelected) Color(0xFF295FAB) else Color.Gray
+                    )
+                }
             )
         }
-    }
-}
-
-@Composable
-fun BottomBarItem(
-    icon: ImageVector,
-    label: String,
-    isSelected: Boolean
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.padding(8.dp)
-    ) {
-        IconButton(onClick = { /* Navegación aquí */ }) {
-            Icon(
-                imageVector = icon,
-                contentDescription = label,
-                tint = if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray,
-                modifier = Modifier.size(24.dp)
-            )
-        }
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray,
-            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-        )
     }
 }
