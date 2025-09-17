@@ -7,20 +7,20 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 
 @Composable
-fun ClientesScreen() {
+fun ClientesScreen(navController: NavHostController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -31,7 +31,7 @@ fun ClientesScreen() {
         Text(
             text = "Clientes",
             fontSize = 22.sp,
-            fontWeight = FontWeight.Bold,
+            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
             modifier = Modifier.padding(bottom = 12.dp)
         )
 
@@ -46,14 +46,13 @@ fun ClientesScreen() {
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Botones fijos (registrar / editar)
+        // Botón Registrar Cliente
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Button(
-                onClick = { /* Registrar Cliente */ },
+                onClick = { navController.navigate("registrar_cliente") },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF295FAB)),
                 modifier = Modifier.weight(1f)
             ) {
@@ -61,21 +60,11 @@ fun ClientesScreen() {
                 Spacer(Modifier.width(6.dp))
                 Text("Registrar Cliente", color = Color.White)
             }
-
-            Button(
-                onClick = { /* Editar Cliente */ },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6A1B9A)),
-                modifier = Modifier.weight(1f)
-            ) {
-                Icon(Icons.Default.Edit, contentDescription = "Editar", tint = Color.White)
-                Spacer(Modifier.width(6.dp))
-                Text("Editar Cliente", color = Color.White)
-            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Contenido scrolleable (totales, filtros, lista)
+        // Contenido scrolleable
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier.fillMaxSize()
@@ -95,38 +84,19 @@ fun ClientesScreen() {
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
-            // Filtros (2 filas de 2 filtros con weight para repartir)
-            item {
-                Text("Filtros", fontWeight = FontWeight.Bold, color = Color.Gray)
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    DropdownFilter("Sección", modifier = Modifier.weight(1f))
-                    DropdownFilter("Sección", modifier = Modifier.weight(1f))
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    DropdownFilter("Sección", modifier = Modifier.weight(1f))
-                    DropdownFilter("Sección", modifier = Modifier.weight(1f))
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-
             // Lista de clientes
             items(10) { index ->
-                ClientCard("Nombre del Cliente $index", "DNI/RUC $index")
+                ClientCard(
+                    nombre = "Nombre del Cliente $index",
+                    dni = "DNI/RUC $index",
+                    onEditClick = { navController.navigate("editar_cliente") }
+                )
             }
         }
     }
 }
 
-// Tarjeta informe (Totales, Activos, Inactivos). Ancho controlado para que quede centrada.
+// Tarjeta informe
 @Composable
 fun InfoCard(title: String, value: String) {
     Card(
@@ -142,59 +112,31 @@ fun InfoCard(title: String, value: String) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(title, fontSize = 16.sp, color = Color.Black)
-            Text(value, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+            Text(value, fontSize = 22.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold, color = Color.Black)
         }
     }
 }
 
-// DropdownFilter ahora recibe un modifier — usa ese modifier para aplicar weight desde el caller.
+// Card de cliente con botón de editar
 @Composable
-fun DropdownFilter(label: String, modifier: Modifier = Modifier) {
-    var expanded by remember { mutableStateOf(false) }
-    var selectedOption by remember { mutableStateOf(label) }
-
-    Box(modifier = modifier) {
-        OutlinedButton(
-            onClick = { expanded = true },
-            modifier = Modifier.fillMaxWidth() // usa el width que le dé el parent (p. ej. weight)
-        ) {
-            Text(selectedOption)
-        }
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            DropdownMenuItem(text = { Text("Opción 1") }, onClick = {
-                selectedOption = "Opción 1"
-                expanded = false
-            })
-            DropdownMenuItem(text = { Text("Opción 2") }, onClick = {
-                selectedOption = "Opción 2"
-                expanded = false
-            })
-        }
-    }
-}
-
-// Card de cliente simple con botón de más opciones
-@Composable
-fun ClientCard(nombre: String, dni: String) {
+fun ClientCard(nombre: String, dni: String, onEditClick: () -> Unit) {
     Card(
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
+            modifier = Modifier.padding(16.dp).fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
-                Text(nombre, fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                Text(nombre, fontSize = 16.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Medium)
                 Text(dni, fontSize = 14.sp, color = Color.Gray)
             }
 
-            IconButton(onClick = { /* Más opciones */ }) {
-                Icon(Icons.Default.MoreVert, contentDescription = "Opciones")
+            IconButton(onClick = onEditClick) {
+                Icon(Icons.Default.Edit, contentDescription = "Editar Cliente")
             }
         }
     }
