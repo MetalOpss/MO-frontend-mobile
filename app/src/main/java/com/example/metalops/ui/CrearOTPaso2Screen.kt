@@ -14,13 +14,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import androidx.compose.ui.tooling.preview.Preview
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CrearOTPaso2Screen(navController: NavController) {
+fun CrearOTPaso2Screen(
+    onSiguiente: () -> Unit,
+    onAtras: () -> Unit,
+    onCerrar: () -> Unit // 👉 nuevo parámetro para cerrar
+) {
     val scrollState = rememberScrollState()
 
     var nombres by remember { mutableStateOf("") }
@@ -45,7 +47,7 @@ fun CrearOTPaso2Screen(navController: NavController) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text("Crear nueva OT", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-            IconButton(onClick = { /* cerrar */ }) {
+            IconButton(onClick = onCerrar) { // 👉 ahora usa onCerrar
                 Icon(Icons.Default.Close, contentDescription = "Cerrar")
             }
         }
@@ -148,7 +150,7 @@ fun CrearOTPaso2Screen(navController: NavController) {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             OutlinedButton(
-                onClick = { navController.popBackStack() },
+                onClick = onAtras,
                 modifier = Modifier.weight(1f),
                 shape = MaterialTheme.shapes.large,
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Gray)
@@ -157,7 +159,7 @@ fun CrearOTPaso2Screen(navController: NavController) {
             }
             Spacer(Modifier.width(8.dp))
             Button(
-                onClick = { /* Paso 3 o guardar */ },
+                onClick = onSiguiente,
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF366A9A)),
                 modifier = Modifier.weight(1f),
                 shape = MaterialTheme.shapes.large
@@ -171,6 +173,9 @@ fun CrearOTPaso2Screen(navController: NavController) {
 @Preview(showBackground = true)
 @Composable
 fun PreviewCrearOTPaso2Screen() {
-    val navController = rememberNavController()
-    CrearOTPaso2Screen(navController)
+    CrearOTPaso2Screen(
+        onSiguiente = {},
+        onAtras = {},
+        onCerrar = {} // 👉 agregado también aquí
+    )
 }

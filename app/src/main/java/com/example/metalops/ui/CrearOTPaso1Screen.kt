@@ -2,20 +2,25 @@ package com.example.metalops.ui
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.font.FontWeight
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CrearOTPaso1Screen(onSiguiente: () -> Unit) {
+fun CrearOTPaso1Screen(
+    onSiguiente: () -> Unit,
+    onCerrar: () -> Unit
+) {
     var nombre by remember { mutableStateOf("") }
     var descripcion by remember { mutableStateOf("") }
     val maxChars = 500
@@ -30,8 +35,28 @@ fun CrearOTPaso1Screen(onSiguiente: () -> Unit) {
             .padding(16.dp)
             .verticalScroll(rememberScrollState())
     ) {
-        Text("Crear nueva OT", style = MaterialTheme.typography.titleLarge)
-        Text("Paso 1: Datos generales de la OT", style = MaterialTheme.typography.bodyMedium)
+        // Header con título y botón cerrar
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                "Crear nueva OT",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            IconButton(onClick = onCerrar) {
+                Icon(Icons.Default.Close, contentDescription = "Cerrar")
+            }
+        }
+
+        Text(
+            "Paso 1: Datos generales de la OT",
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color.Gray
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -119,5 +144,8 @@ fun CrearOTPaso1Screen(onSiguiente: () -> Unit) {
 @Preview(showBackground = true)
 @Composable
 fun PreviewCrearOTPaso1Screen() {
-    CrearOTPaso1Screen(onSiguiente = {})
+    CrearOTPaso1Screen(
+        onSiguiente = {},
+        onCerrar = {}
+    )
 }

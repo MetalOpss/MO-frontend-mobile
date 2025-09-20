@@ -21,7 +21,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             MetalOpsTheme {
-                MainScreen() 
+                MainScreen()
             }
         }
     }
@@ -41,15 +41,57 @@ fun MainScreen() {
         ) {
             composable("home") { HomeScreen() }
             composable("clientes") { ClientesScreen(navController) }
-            composable("ots") { OTScreen() }
-            composable("registrar_cliente") { RegistrarClienteScreen(
-                onClose = { navController.popBackStack() },
-                onAction = { navController.popBackStack() }
-            ) }
-            composable("editar_cliente") { EditarClienteScreen(
-                onClose = { navController.popBackStack() },
-                onAction = { navController.popBackStack() }
-            ) }
+            composable("ots") { OrdenesTrabajoScreen(navController) }
+
+            // Crear OT Paso 1
+            composable("crear_ot_paso1") {
+                CrearOTPaso1Screen(
+                    onSiguiente = { navController.navigate("crear_ot_paso2") },
+                    onCerrar = { navController.navigate("ots") }
+                )
+            }
+
+            // Crear OT Paso 2
+            composable("crear_ot_paso2") {
+                CrearOTPaso2Screen(
+                    onSiguiente = { navController.navigate("crear_ot_paso3") },
+                    onAtras = { navController.popBackStack() },
+                    onCerrar = { navController.navigate("ots") }
+                )
+            }
+
+            // Crear OT Paso 3
+            composable("crear_ot_paso3") {
+                CrearOTPaso3Screen(
+                    onSiguiente = { navController.navigate("crear_ot_paso3_1") }, // va a 3_1
+                    onAtras = { navController.popBackStack() },
+                    onCerrar = { navController.popBackStack("ots", inclusive = false) }
+                )
+            }
+
+            // Crear OT Paso 3_1 (antes paso4) - llamada consistente con la firma del Composable
+            composable("crear_ot_paso3_1") {
+                CrearOTPaso3_1Screen(
+                    onAtras = { navController.popBackStack("crear_ot_paso3", inclusive = false) },
+                    onSiguiente = { /* navController.navigate("crear_ot_paso5") o confirmar */ },
+                    onCerrar = { navController.popBackStack("ots", inclusive = false) }
+                )
+            }
+
+            // Registrar / Editar cliente
+            composable("registrar_cliente") {
+                RegistrarClienteScreen(
+                    onClose = { navController.popBackStack() },
+                    onAction = { navController.popBackStack() }
+                )
+            }
+            composable("editar_cliente") {
+                EditarClienteScreen(
+                    onClose = { navController.popBackStack() },
+                    onAction = { navController.popBackStack() }
+                )
+            }
         }
     }
 }
+
