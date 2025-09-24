@@ -27,6 +27,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun MainScreen() {
     val navController = rememberNavController()
@@ -63,17 +64,35 @@ fun MainScreen() {
             // Crear OT Paso 3
             composable("crear_ot_paso3") {
                 CrearOTPaso3Screen(
-                    onSiguiente = { navController.navigate("crear_ot_paso3_1") }, // va a 3_1
+                    onSiguiente = { navController.navigate("crear_ot_paso3_1") },
                     onAtras = { navController.popBackStack() },
                     onCerrar = { navController.popBackStack("ots", inclusive = false) }
                 )
             }
 
-            // Crear OT Paso 3_1 (antes paso4) - llamada consistente con la firma del Composable
+            // Crear OT Paso 3_1
             composable("crear_ot_paso3_1") {
                 CrearOTPaso3_1Screen(
                     onAtras = { navController.popBackStack("crear_ot_paso3", inclusive = false) },
-                    onSiguiente = { /* navController.navigate("crear_ot_paso5") o confirmar */ },
+                    onSiguiente = { navController.navigate("crear_ot_paso4") },
+                    onCerrar = { navController.popBackStack("ots", inclusive = false) }
+                )
+            }
+
+            // Crear OT Paso 4
+            composable("crear_ot_paso4") {
+                CrearOTPaso4Screen(
+                    onAtras = { navController.popBackStack("crear_ot_paso3_1", inclusive = false) },
+                    onSiguiente = { navController.navigate("crear_ot_paso5") },
+                    onCerrar = { navController.popBackStack("ots", inclusive = false) }
+                )
+            }
+
+            // Crear OT Paso 5
+            composable("crear_ot_paso5") {
+                CrearOTPaso5Screen(
+                    onAtras = { navController.popBackStack("crear_ot_paso4", inclusive = false) },
+                    onFinalizar = { navController.navigate("ots") },
                     onCerrar = { navController.popBackStack("ots", inclusive = false) }
                 )
             }
@@ -94,4 +113,3 @@ fun MainScreen() {
         }
     }
 }
-

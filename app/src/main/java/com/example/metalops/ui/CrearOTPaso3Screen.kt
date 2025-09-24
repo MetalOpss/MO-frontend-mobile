@@ -3,10 +3,12 @@ package com.example.metalops.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -34,7 +36,7 @@ fun FormDropdownField(
     ) {
         OutlinedTextField(
             value = selected,
-            onValueChange = { /* readOnly field */ },
+            onValueChange = { },
             readOnly = true,
             placeholder = { if (selected.isEmpty()) Text(label) },
             trailingIcon = {
@@ -54,7 +56,6 @@ fun FormDropdownField(
             )
         )
 
-        // Opciones ejemplo — cámbialas según tus datos reales
         ExposedDropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false }
@@ -77,89 +78,111 @@ fun FormDropdownField(
 fun CrearOTPaso3Screen(
     onSiguiente: () -> Unit = {},
     onAtras: () -> Unit = {},
-    onCerrar: () -> Unit = {}
+    onCerrar: () -> Unit = {},
+    onOpciones: () -> Unit = {} // 👉 callback para la bolita
 ) {
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState())
     ) {
-        // Header (mismo tamaño que Paso 2)
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column {
-                Text(
-                    text = "Crear nueva OT",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black
-                )
-                Text(
-                    text = "Paso 3: Servicios de la OT",
-                    fontSize = 16.sp,
-                    color = Color.Gray
-                )
-            }
-
-            IconButton(
-                onClick = onCerrar,
-                modifier = Modifier.size(36.dp)
-            ) {
-                Icon(
-                    Icons.Default.Close,
-                    contentDescription = "Cerrar",
-                    tint = Color.Gray
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Contenido — dropdowns (usa la función incluida arriba)
         Column(
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-            FormDropdownField(label = "Servicios")
-            FormDropdownField(label = "Servicios")
-            FormDropdownField(label = "Servicios")
-            // agrega o quita campos según necesites
+            // Header
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = "Crear nueva OT",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black
+                    )
+                    Text(
+                        text = "Paso 3: Servicios de la OT",
+                        fontSize = 16.sp,
+                        color = Color.Gray
+                    )
+                }
+
+                IconButton(
+                    onClick = onCerrar,
+                    modifier = Modifier.size(36.dp)
+                ) {
+                    Icon(
+                        Icons.Default.Close,
+                        contentDescription = "Cerrar",
+                        tint = Color.Gray
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Contenido
+            Column(
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                FormDropdownField(label = "Servicios")
+                FormDropdownField(label = "Servicios")
+                FormDropdownField(label = "Servicios")
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Botones inferiores
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                OutlinedButton(
+                    onClick = onAtras,
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(48.dp),
+                    shape = RoundedCornerShape(25.dp)
+                ) {
+                    Text("Atrás", color = Color.Gray)
+                }
+
+                Button(
+                    onClick = onSiguiente,
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(48.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF366A9A)
+                    ),
+                    shape = RoundedCornerShape(25.dp)
+                ) {
+                    Text("Siguiente", color = Color.White)
+                }
+            }
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // Botones inferiores
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        // 👉 Bolita flotante (arriba a la derecha)
+        FloatingActionButton(
+            onClick = onOpciones,
+            shape = CircleShape,
+            containerColor = Color(0xFF366A9A),
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(top = 72.dp, end = 16.dp) // debajo del header
+                .size(48.dp)
         ) {
-            OutlinedButton(
-                onClick = onAtras,
-                modifier = Modifier
-                    .weight(1f)
-                    .height(48.dp),
-                shape = RoundedCornerShape(25.dp)
-            ) {
-                Text("Atrás", color = Color.Gray)
-            }
-
-            Button(
-                onClick = onSiguiente,
-                modifier = Modifier
-                    .weight(1f)
-                    .height(48.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF366A9A)
-                ),
-                shape = RoundedCornerShape(25.dp)
-            ) {
-                Text("Siguiente", color = Color.White)
-            }
+            Icon(
+                imageVector = Icons.Default.MoreVert,
+                contentDescription = "Opciones",
+                tint = Color.White
+            )
         }
     }
 }
