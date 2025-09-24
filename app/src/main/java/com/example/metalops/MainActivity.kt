@@ -50,7 +50,7 @@ fun MainScreen() {
                     onSiguiente = { navController.navigate("crear_ot_paso2") },
                     onCerrar = { navController.navigate("ots") }
                 )
-            }
+               }
 
             // Crear OT Paso 2
             composable("crear_ot_paso2") {
