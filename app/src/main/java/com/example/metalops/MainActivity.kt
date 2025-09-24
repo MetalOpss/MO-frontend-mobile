@@ -21,7 +21,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             MetalOpsTheme {
-                MainScreen()
+                MainScreen() 
             }
         }
     }
@@ -42,6 +42,15 @@ fun MainScreen() {
         ) {
             composable("home") { HomeScreen() }
             composable("clientes") { ClientesScreen(navController) }
+            composable("ots") { OTScreen() }
+            composable("registrar_cliente") { RegistrarClienteScreen(
+                onClose = { navController.popBackStack() },
+                onAction = { navController.popBackStack() }
+            ) }
+            composable("editar_cliente") { EditarClienteScreen(
+                onClose = { navController.popBackStack() },
+                onAction = { navController.popBackStack() }
+            ) }
             composable("ots") { OrdenesTrabajoScreen(navController) }
 
             // Crear OT Paso 1
