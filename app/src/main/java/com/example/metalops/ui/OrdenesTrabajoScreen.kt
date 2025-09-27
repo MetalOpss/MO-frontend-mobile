@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -14,14 +13,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 
+// ------------------- DATA -------------------
 data class OrdenTrabajo(
     val nombre: String,
     val fecha: String,
@@ -36,9 +35,10 @@ enum class EstadoOT(val displayName: String, val color: Color) {
     POR_CORREGIR("Por corregir", Color(0xFFFFEBEE))
 }
 
+// ------------------- MAIN SCREEN -------------------
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OrdenesTrabajoScreen() {
+fun OrdenesTrabajoScreen(navController: NavController) {
     val ordenesEjemplo = listOf(
         OrdenTrabajo("Nombre de la OT", "11 Sep, 8:00 AM", "", EstadoOT.EN_REGISTRO),
         OrdenTrabajo("Nombre de la OT", "11 Sep, 8:00 AM", "", EstadoOT.PENDIENTE_SIN_DISEÑO),
@@ -60,7 +60,7 @@ fun OrdenesTrabajoScreen() {
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
-        // Search and Register Button
+        // Search + Button
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -88,12 +88,10 @@ fun OrdenesTrabajoScreen() {
                 )
             )
 
-            // Register Button
+            // Register Button -> navegar
             Button(
-                onClick = { },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF1976D2)
-                ),
+                onClick = { navController.navigate("crear_ot_paso1") },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1976D2)),
                 shape = RoundedCornerShape(25.dp),
                 modifier = Modifier.height(56.dp)
             ) {
@@ -104,11 +102,7 @@ fun OrdenesTrabajoScreen() {
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "Registrar OT",
-                    color = Color.White,
-                    fontSize = 14.sp
-                )
+                Text("Registrar OT", color = Color.White, fontSize = 14.sp)
             }
         }
 
@@ -119,16 +113,8 @@ fun OrdenesTrabajoScreen() {
                 .padding(bottom = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            StatusCard(
-                title = "En registro",
-                count = "100",
-                modifier = Modifier.weight(1f)
-            )
-            StatusCard(
-                title = "Sin diseño",
-                count = "50",
-                modifier = Modifier.weight(1f)
-            )
+            StatusCard("En registro", "100", Modifier.weight(1f))
+            StatusCard("Sin diseño", "50", Modifier.weight(1f))
         }
 
         Row(
@@ -137,16 +123,8 @@ fun OrdenesTrabajoScreen() {
                 .padding(bottom = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            StatusCard(
-                title = "En ejecución",
-                count = "20",
-                modifier = Modifier.weight(1f)
-            )
-            StatusCard(
-                title = "Por corregir",
-                count = "2",
-                modifier = Modifier.weight(1f)
-            )
+            StatusCard("En ejecución", "20", Modifier.weight(1f))
+            StatusCard("Por corregir", "2", Modifier.weight(1f))
         }
 
         // Filters
@@ -164,14 +142,8 @@ fun OrdenesTrabajoScreen() {
                 .padding(bottom = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            FilterDropdown(
-                text = "Sección",
-                modifier = Modifier.weight(1f)
-            )
-            FilterDropdown(
-                text = "Sección",
-                modifier = Modifier.weight(1f)
-            )
+            FilterDropdown("Sección", Modifier.weight(1f))
+            FilterDropdown("Sección", Modifier.weight(1f))
         }
 
         Row(
@@ -180,14 +152,8 @@ fun OrdenesTrabajoScreen() {
                 .padding(bottom = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            FilterDropdown(
-                text = "Sección",
-                modifier = Modifier.weight(1f)
-            )
-            FilterDropdown(
-                text = "Sección",
-                modifier = Modifier.weight(1f)
-            )
+            FilterDropdown("Sección", Modifier.weight(1f))
+            FilterDropdown("Sección", Modifier.weight(1f))
         }
 
         // Orders List
@@ -201,12 +167,9 @@ fun OrdenesTrabajoScreen() {
     }
 }
 
+// ------------------- SUB-COMPONENTS -------------------
 @Composable
-fun StatusCard(
-    title: String,
-    count: String,
-    modifier: Modifier = Modifier
-) {
+fun StatusCard(title: String, count: String, modifier: Modifier = Modifier) {
     Card(
         modifier = modifier.height(70.dp),
         shape = RoundedCornerShape(12.dp),
@@ -214,35 +177,19 @@ fun StatusCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(12.dp),
+            modifier = Modifier.fillMaxSize().padding(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text(
-                text = count,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black,
-                textAlign = TextAlign.Center
-            )
-            Text(
-                text = title,
-                fontSize = 12.sp,
-                color = Color.Gray,
-                textAlign = TextAlign.Center
-            )
+            Text(count, fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+            Text(title, fontSize = 12.sp, color = Color.Gray)
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FilterDropdown(
-    text: String,
-    modifier: Modifier = Modifier
-) {
+fun FilterDropdown(text: String, modifier: Modifier = Modifier) {
     var expanded by remember { mutableStateOf(false) }
 
     ExposedDropdownMenuBox(
@@ -255,15 +202,9 @@ fun FilterDropdown(
             onValueChange = { },
             readOnly = true,
             trailingIcon = {
-                Icon(
-                    Icons.Default.ArrowDropDown,
-                    contentDescription = "Dropdown",
-                    tint = Color.Gray
-                )
+                Icon(Icons.Default.ArrowDropDown, contentDescription = "Dropdown", tint = Color.Gray)
             },
-            modifier = Modifier
-                .menuAnchor()
-                .fillMaxWidth(),
+            modifier = Modifier.menuAnchor().fillMaxWidth(),
             shape = RoundedCornerShape(8.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Color.Gray,
@@ -271,18 +212,9 @@ fun FilterDropdown(
             )
         )
 
-        ExposedDropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
-            DropdownMenuItem(
-                text = { Text("Opción 1") },
-                onClick = { expanded = false }
-            )
-            DropdownMenuItem(
-                text = { Text("Opción 2") },
-                onClick = { expanded = false }
-            )
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            DropdownMenuItem(text = { Text("Opción 1") }, onClick = { expanded = false })
+            DropdownMenuItem(text = { Text("Opción 2") }, onClick = { expanded = false })
         }
     }
 }
@@ -296,37 +228,22 @@ fun OrdenTrabajoCard(orden: OrdenTrabajo) {
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = orden.nombre,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = Color.Black
-                )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(orden.nombre, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = Color.Black)
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = orden.fecha,
-                    fontSize = 14.sp,
-                    color = Color.Gray
-                )
+                Text(orden.fecha, fontSize = 14.sp, color = Color.Gray)
                 Spacer(modifier = Modifier.height(8.dp))
                 Box(
-                    modifier = Modifier
-                        .background(
-                            color = orden.estado.color,
-                            shape = RoundedCornerShape(16.dp)
-                        )
-                        .padding(horizontal = 12.dp, vertical = 4.dp)
+                    modifier = Modifier.background(
+                        color = orden.estado.color,
+                        shape = RoundedCornerShape(16.dp)
+                    ).padding(horizontal = 12.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        text = orden.estado.displayName,
+                        orden.estado.displayName,
                         fontSize = 12.sp,
                         color = when (orden.estado) {
                             EstadoOT.EN_REGISTRO -> Color(0xFF1976D2)
@@ -338,13 +255,5 @@ fun OrdenTrabajoCard(orden: OrdenTrabajo) {
                 }
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun OrdenesTrabajoScreenPreview() {
-    MaterialTheme {
-        OrdenesTrabajoScreen()
     }
 }

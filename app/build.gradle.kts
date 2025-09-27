@@ -27,13 +27,18 @@ android {
             )
         }
     }
+
     compileOptions {
+        // ✅ Habilitar desugaring para usar java.time en API bajas
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
     kotlinOptions {
         jvmTarget = "11"
     }
+
     buildFeatures {
         compose = true
     }
@@ -56,6 +61,10 @@ dependencies {
 
     // 🚀 Iconos de Material (para Home, Clientes, OT's)
     implementation("androidx.compose.material:material-icons-extended")
+    implementation(libs.androidx.foundation)
+
+    // ✅ Desugaring para java.time (API 24+)
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 
     // Tests
     testImplementation(libs.junit)
