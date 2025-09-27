@@ -79,7 +79,9 @@ fun CrearOTPaso3Screen(
     onSiguiente: () -> Unit = {},
     onAtras: () -> Unit = {},
     onCerrar: () -> Unit = {},
+
     onOpciones: () -> Unit = {} //  callback para la bolita
+
 ) {
     Box(
         modifier = Modifier
@@ -167,7 +169,6 @@ fun CrearOTPaso3Screen(
                 }
             }
         }
-
         //  Bolita flotante (arriba a la derecha)
         FloatingActionButton(
             onClick = onOpciones,
