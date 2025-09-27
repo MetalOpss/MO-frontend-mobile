@@ -1,4 +1,4 @@
-package com.example.metalops.ui
+package com.example.metalops.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

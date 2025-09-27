@@ -31,7 +31,9 @@ fun CrearOTPaso4Screen(
     onSiguiente: () -> Unit = {},
     onAtras: () -> Unit = {},
     onCerrar: () -> Unit = {},
-    onOpciones: () -> Unit = {} // 👉 para la bolita
+
+    onOpciones: () -> Unit = {} //  para la bolita
+
 ) {
     var currentMonth by remember { mutableStateOf(YearMonth.now()) }
     var selectedDate by remember { mutableStateOf<LocalDate?>(null) }

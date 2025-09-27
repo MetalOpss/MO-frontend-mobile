@@ -14,7 +14,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.metalops.ui.*
 import com.example.metalops.ui.theme.MetalOpsTheme
-
+import com.example.metalops.ui.components.BottomBar
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
