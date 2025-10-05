@@ -5,10 +5,11 @@
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="PreviewCrearOTPaso1Screen">
+      <SelectionState runConfigName="MainActivity">
+      <SelectionState runConfigName="CrearNuevaOTModalPreview">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="All Tests">
+      <SelectionState runConfigName="PreviewCrearOTPaso4Screen">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>
