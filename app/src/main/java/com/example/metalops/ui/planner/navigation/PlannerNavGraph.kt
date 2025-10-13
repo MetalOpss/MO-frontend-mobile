@@ -10,11 +10,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.metalops.core.ui.components.PlannerBottomBar
 import com.example.metalops.ui.planner.screens.HomeDashboard
+import com.example.metalops.ui.planner.screens.PlannerOTsScreen
+import com.example.metalops.ui.planner.screens.PlannerTiempoScreen
 
 object PlannerDestinations {
     const val HOME_DASHBOARD = "home_dashboard"
-    const val REPORTES = "reportes"
-    const val PERFIL = "perfil"
+    const val OTS = "planner_ots"
+    const val TIEMPO = "planner_tiempo"
 }
 
 @Composable
@@ -29,14 +31,19 @@ fun PlannerNavGraph(modifier: Modifier = Modifier) {
             startDestination = PlannerDestinations.HOME_DASHBOARD,
             modifier = modifier.padding(innerPadding)
         ) {
+            // 🏠 Pantalla de Inicio
             composable(PlannerDestinations.HOME_DASHBOARD) {
                 HomeDashboard(navController)
             }
-            composable(PlannerDestinations.REPORTES) {
-                // Ejemplo: ReportesScreen(navController)
+
+            // 📋 Pantalla de OT's
+            composable(PlannerDestinations.OTS) {
+                PlannerOTsScreen(navController)
             }
-            composable(PlannerDestinations.PERFIL) {
-                // Ejemplo: PerfilPlannerScreen(navController)
+
+            // ⏱️ Pantalla de Tiempo
+            composable(PlannerDestinations.TIEMPO) {
+                PlannerTiempoScreen(navController)
             }
         }
     }

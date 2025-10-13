@@ -5,10 +5,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.AccessTime
-import androidx.compose.material3.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -33,9 +36,7 @@ fun PlannerBottomBar(navController: NavController) {
         PlannerNavItem("planner_tiempo", "Tiempo", Icons.Default.AccessTime)
     )
 
-    NavigationBar(
-        containerColor = Color(0xFFF8F8F8)
-    ) {
+    NavigationBar(containerColor = Color(0xFFF8F8F8)) {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = navBackStackEntry?.destination?.route
 
@@ -47,8 +48,11 @@ fun PlannerBottomBar(navController: NavController) {
                 onClick = {
                     if (currentRoute != item.route) {
                         navController.navigate(item.route) {
-                            popUpTo("home_dashboard") { inclusive = false }
+                            popUpTo(navController.graph.startDestinationId) {
+                                saveState = true
+                            }
                             launchSingleTop = true
+                            restoreState = true
                         }
                     }
                 },
@@ -60,11 +64,7 @@ fun PlannerBottomBar(navController: NavController) {
                                 .background(Color(0xFF295FAB), CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(
-                                item.icon,
-                                contentDescription = item.label,
-                                tint = Color.White
-                            )
+                            Icon(item.icon, contentDescription = item.label, tint = Color.White)
                         }
                     } else {
                         Icon(item.icon, contentDescription = item.label, tint = Color.Gray)
