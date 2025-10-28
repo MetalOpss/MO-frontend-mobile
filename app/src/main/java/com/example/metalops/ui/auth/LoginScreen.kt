@@ -1,5 +1,6 @@
 package com.example.metalops.ui.auth
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -10,26 +11,34 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.metalops.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
     onLoginClick: (String, String, String) -> Unit = { _, _, _ -> },
-    onForgotPasswordClick: () -> Unit = {}
+    onForgotPasswordClick: () -> Unit = {},
+    onRegisterClick: () -> Unit = {} // 🔹 nuevo
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
 
+    var selectedRole by remember { mutableStateOf("Selecciona tu rol") }
+    var expanded by remember { mutableStateOf(false) }
+    val roles = listOf("Planner", "Operario", "Agente")
+
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = Color(0xFFF5F5F5)
+        color = Color.White
     ) {
         Column(
             modifier = Modifier
@@ -45,15 +54,16 @@ fun LoginScreen(
                 modifier = Modifier.padding(bottom = 8.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Default.Visibility,
+                    painter = painterResource(id = R.drawable.logo_metalops),
                     contentDescription = "MetalOps Logo",
-                    tint = Color(0xFF1976D2),
+                    tint = Color.Unspecified,
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = "MetalOps",
                     fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
                     color = Color(0xFF1976D2)
                 )
             }
@@ -67,10 +77,6 @@ fun LoginScreen(
             )
 
             // Selector de rol
-            var expanded by remember { mutableStateOf(false) }
-            var selectedRole by remember { mutableStateOf("Selecciona tu rol") }
-            val roles = listOf("Planner", "Operario", "Agente")
-
             Text(
                 text = "Rol",
                 fontSize = 14.sp,
@@ -98,6 +104,7 @@ fun LoginScreen(
                         focusedBorderColor = Color(0xFF1976D2)
                     )
                 )
+
                 ExposedDropdownMenu(
                     expanded = expanded,
                     onDismissRequest = { expanded = false }
@@ -133,7 +140,10 @@ fun LoginScreen(
                     unfocusedBorderColor = Color.LightGray,
                     focusedBorderColor = Color(0xFF1976D2)
                 ),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Email,
+                    imeAction = ImeAction.Next
+                ),
                 singleLine = true
             )
 
@@ -164,7 +174,11 @@ fun LoginScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 32.dp),
-                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                visualTransformation = if (passwordVisible) {
+                    VisualTransformation.None
+                } else {
+                    PasswordVisualTransformation()
+                },
                 trailingIcon = {
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
                         Icon(
@@ -177,13 +191,18 @@ fun LoginScreen(
                     unfocusedBorderColor = Color.LightGray,
                     focusedBorderColor = Color(0xFF1976D2)
                 ),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Password,
+                    imeAction = ImeAction.Done
+                ),
                 singleLine = true
             )
 
             // Botón de inicio de sesión
             Button(
-                onClick = { onLoginClick(email, password, selectedRole) },
+                onClick = {
+                    onLoginClick(email, password, selectedRole)
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
@@ -191,12 +210,38 @@ fun LoginScreen(
                     containerColor = Color(0xFF1976D2)
                 ),
                 shape = MaterialTheme.shapes.medium,
-                enabled = selectedRole != "Selecciona tu rol" && email.isNotEmpty() && password.isNotEmpty()
+                enabled = selectedRole != "Selecciona tu rol" &&
+                        email.isNotEmpty() &&
+                        password.isNotEmpty()
             ) {
                 Text(
                     text = "Iniciar Sesión",
                     fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.Medium,
+                    color = Color.White
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // 🔹 Nuevo: link a registro
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "¿Eres nuevo en la app? ",
+                    fontSize = 14.sp,
+                    color = Color(0xFF6E6E6E)
+                )
+                Text(
+                    text = "Regístrate aquí",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color(0xFF1976D2),
+                    modifier = Modifier.clickable {
+                        onRegisterClick()
+                    }
                 )
             }
         }

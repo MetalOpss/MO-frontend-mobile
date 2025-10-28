@@ -1,14 +1,17 @@
 package com.example.metalops.core.ui.components
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -16,17 +19,15 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.layout.size
-import androidx.compose.ui.zIndex // <- importante
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 
 /**
- * FabMenu compatible con la llamada desde HomeScreen:
- * FabMenu(modifier = ..., onNotificacionesClick = {...}, onPerfilClick = {...}, onConfiguracionClick = {...})
+ * FabMenu reutilizable (Agente / Planner)
+ * - FAB morado principal (cuadradito redondeado)
+ * - 3 burbujas flotantes lilas con íconos morados
  */
 @Composable
 fun FabMenu(
@@ -37,91 +38,121 @@ fun FabMenu(
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    // contenedor para posicionar el FAB en la esquina (HomeScreen ya usa Modifier.align)
-    Box(modifier = modifier.padding(16.dp), contentAlignment = Alignment.BottomEnd) {
+    Box(
+        modifier = modifier.padding(16.dp),
+        contentAlignment = Alignment.BottomEnd
+    ) {
         Column(
             horizontalAlignment = Alignment.End,
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // botones pequeños (visible solo cuando expanded == true)
+            // 🔹 Burbujas pequeñas
             AnimatedVisibility(
                 visible = expanded,
-                enter = fadeIn(animationSpec = tween(150)),
-                exit = fadeOut(animationSpec = tween(150))
+                enter = fadeIn(animationSpec = tween(200)),
+                exit = fadeOut(animationSpec = tween(200))
             ) {
                 Column(
                     horizontalAlignment = Alignment.End,
                     verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier
-                        .zIndex(1f) // <- los mini fabs quedan por encima del FAB principal
+                    modifier = Modifier.zIndex(1f)
                 ) {
-                    MiniFab(
+                    MiniFabBubble(
                         onClick = {
                             expanded = false
-                            println("CLICK: notificaciones")
                             onNotificacionesClick()
                         },
-                        contentDescription = "Notificaciones",
-                        icon = Icons.Default.Notifications
+                        icon = Icons.Default.Notifications,
+                        contentDescription = "Notificaciones"
                     )
-                    MiniFab(
+                    MiniFabBubble(
                         onClick = {
                             expanded = false
-                            println("CLICK: perfil")
                             onPerfilClick()
                         },
-                        contentDescription = "Perfil",
-                        icon = Icons.Default.Person
+                        icon = Icons.Default.Person,
+                        contentDescription = "Perfil"
                     )
-                    MiniFab(
+                    MiniFabBubble(
                         onClick = {
                             expanded = false
-                            println("CLICK: configuracion")
                             onConfiguracionClick()
                         },
-                        contentDescription = "Configuración",
-                        icon = Icons.Default.Settings
+                        icon = Icons.Default.Settings,
+                        contentDescription = "Configuración"
                     )
                 }
             }
 
-            // FAB principal
-            FloatingActionButton(
-                onClick = { expanded = !expanded },
-                containerColor = MaterialTheme.colorScheme.primary,
-                // opcional: si quieres que el FAB principal quede "debajo" lógicamente,
-                // lo dejamos sin zIndex o con zIndex(0f)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Menu,
-                    contentDescription = if (expanded) "Cerrar menú" else "Abrir menú",
-                    tint = Color.White
-                )
-            }
+            // 🔸 FAB principal morado
+            MainActionFab(
+                isExpanded = expanded,
+                onClick = { expanded = !expanded }
+            )
         }
     }
 }
 
 @Composable
-private fun MiniFab(
+private fun MiniFabBubble(
     onClick: () -> Unit,
-    contentDescription: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    contentDescription: String
 ) {
-    // Tamaño pequeño para mini-FAB
-    val size = 44.dp
+    val bubbleBg = Color(0xFFEDE5FF) // lila claro
+    val iconTint = Color(0xFF5B3FA3) // morado oscuro visible
+
+    // ✅ Uso de IconButton para click real, envuelto en Surface redondeada
     Surface(
+        modifier = Modifier
+            .size(48.dp)
+            .shadow(
+                elevation = 8.dp,
+                shape = CircleShape,
+                clip = false
+            ),
         shape = CircleShape,
-        tonalElevation = 6.dp,
-        shadowElevation = 6.dp,
-        // opcional: puedes darle color de fondo aquí si quieres
-        // color = MaterialTheme.colorScheme.primary
+        color = bubbleBg,
+        tonalElevation = 0.dp,
+        shadowElevation = 8.dp
     ) {
         IconButton(
             onClick = onClick,
-            modifier = Modifier.size(size)
+            modifier = Modifier.fillMaxSize()
         ) {
-            Icon(icon, contentDescription = contentDescription, tint = MaterialTheme.colorScheme.onPrimary)
+            Icon(
+                imageVector = icon,
+                contentDescription = contentDescription,
+                tint = iconTint
+            )
         }
+    }
+}
+
+@Composable
+private fun MainActionFab(
+    isExpanded: Boolean,
+    onClick: () -> Unit
+) {
+    val mainBg = Color(0xFF5B3FA3) // morado del botón principal
+    val iconTint = Color.White
+
+    FloatingActionButton(
+        onClick = onClick,
+        containerColor = mainBg,
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier
+            .size(width = 56.dp, height = 56.dp)
+            .shadow(
+                elevation = 10.dp,
+                shape = RoundedCornerShape(16.dp),
+                clip = false
+            )
+    ) {
+        Icon(
+            imageVector = Icons.Default.Menu,
+            contentDescription = if (isExpanded) "Cerrar menú" else "Abrir menú",
+            tint = iconTint
+        )
     }
 }

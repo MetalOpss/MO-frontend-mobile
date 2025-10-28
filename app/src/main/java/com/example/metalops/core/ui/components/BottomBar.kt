@@ -4,11 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.People
-import androidx.compose.material3.*
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Text
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -25,14 +24,19 @@ data class BottomNavItem(
     val icon: ImageVector
 )
 
+/**
+ * BottomBar reutilizable.
+ *
+ * @param navController el NavController del grafo actual (agente o planner)
+ * @param items lista de pestañas a renderizar (cada una tiene route/label/icon)
+ * @param startRoute ruta raíz/base de ese grafo, usada en popUpTo para limpiar backstack
+ */
 @Composable
-fun BottomBar(navController: NavController) {
-    val items = listOf(
-        BottomNavItem("home", "Inicio", Icons.Default.Home),
-        BottomNavItem("clientes", "Clientes", Icons.Default.People),
-        BottomNavItem("ots", "OT's", Icons.Default.List)
-    )
-
+fun BottomBar(
+    navController: NavController,
+    items: List<BottomNavItem>,
+    startRoute: String
+) {
     NavigationBar(
         containerColor = Color(0xFFF8F8F8),
     ) {
@@ -47,8 +51,12 @@ fun BottomBar(navController: NavController) {
                 onClick = {
                     if (currentRoute != item.route) {
                         navController.navigate(item.route) {
-                            popUpTo("home") { inclusive = false }
+                            // vamos al tab seleccionado
                             launchSingleTop = true
+                            // limpiamos stack hasta la raíz del grafo de ese rol
+                            popUpTo(startRoute) {
+                                inclusive = false
+                            }
                         }
                     }
                 },
@@ -56,18 +64,22 @@ fun BottomBar(navController: NavController) {
                     if (isSelected) {
                         Box(
                             modifier = Modifier
-                                .size(40.dp) // tamaño fijo de la bolita
+                                .size(40.dp)
                                 .background(Color(0xFF295FAB), CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
-                                item.icon,
+                                imageVector = item.icon,
                                 contentDescription = item.label,
                                 tint = Color.White
                             )
                         }
                     } else {
-                        Icon(item.icon, contentDescription = item.label, tint = Color.Gray)
+                        Icon(
+                            imageVector = item.icon,
+                            contentDescription = item.label,
+                            tint = Color.Gray
+                        )
                     }
                 },
                 label = {

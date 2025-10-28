@@ -8,6 +8,7 @@ import androidx.annotation.RequiresApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import com.example.metalops.ui.navigation.MetalOpsApp
+
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -15,7 +16,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             MaterialTheme {
                 Surface {
-                    MetalOpsApp()
+                    MetalOpsApp() // ⬅️ esto ahora abre login primero
                 }
             }
         }

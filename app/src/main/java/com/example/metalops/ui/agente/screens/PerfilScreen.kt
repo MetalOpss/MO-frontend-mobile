@@ -13,17 +13,24 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.metalops.core.ui.components.ChangePasswordDialog
 import com.example.metalops.core.ui.components.*
+import com.example.metalops.core.session.SessionManager
+import com.example.metalops.ui.agente.navigation.Destinations
+import com.example.metalops.ui.navigation.RootRoute
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PerfilScreen(
-    navController: NavHostController,
+    navController: NavHostController,         // nav interno del módulo Agente
+    rootNavController: NavHostController,     // nav raíz (RootNavGraph)
+    sessionManager: SessionManager,
     modifier: Modifier = Modifier,
     fullName: String = "Usuario MetalOps",
     email: String = "usuario@metalops.com",
     username: String = "usuariometalops"
 ) {
     var showChangePassword by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
@@ -74,13 +81,35 @@ fun PerfilScreen(
                         Spacer(modifier = Modifier.height(12.dp))
                         PasswordRow(label = "Contraseña", masked = "••••••••") {
                             showChangePassword = true
-                            println("Abrir modal cambiar contraseña")
                         }
                         Spacer(modifier = Modifier.height(18.dp))
-                        ActionButton(text = "Cerrar sesión", onClick = {
-                            // logout real
-                            navController.popBackStack()
-                        }, tint = Color(0xFFB00020))
+
+                        // Botón "Cerrar sesión"
+                        ActionButton(
+                            text = "Cerrar sesión",
+                            onClick = {
+                                scope.launch {
+                                    // 1. Borrar la sesión guardada (rol)
+                                    sessionManager.clearSession()
+
+                                    // 2. Asegurar que el nav interno del agente
+                                    //    vuelve a un estado base (por ejemplo HOME),
+                                    //    y salimos de pantallas profundas como Perfil.
+                                    navController.popBackStack(
+                                        route = Destinations.HOME,
+                                        inclusive = false
+                                    )
+
+                                    // 3. Ir al flujo de login usando el nav raíz (global)
+                                    rootNavController.navigate(RootRoute.Auth.route) {
+                                        // limpiar TODO el back stack previo (agente, planner, etc.)
+                                        popUpTo(0) { inclusive = true }
+                                        launchSingleTop = true
+                                    }
+                                }
+                            },
+                            tint = Color(0xFFB00020)
+                        )
                     }
                 }
             }
@@ -89,7 +118,7 @@ fun PerfilScreen(
                 ChangePasswordDialog(
                     onDismiss = { showChangePassword = false },
                     onConfirm = { newPass ->
-                        println("Nueva contraseña: $newPass")
+                        // TODO: implementar cambio de contraseña real
                         showChangePassword = false
                     }
                 )
