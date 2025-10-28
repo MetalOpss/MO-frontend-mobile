@@ -9,7 +9,7 @@ import androidx.annotation.RequiresApi
 @Composable
 fun MetalOpsApp() {
     // 🟢 Cambia aquí según lo que quieras probar
-    val isPlanner = true // true = planner, false = agente
+    val isPlanner = false // true = planner, false = agente
 
     if (isPlanner) {
         com.example.metalops.ui.planner.navigation.PlannerNavGraph()
