@@ -1,19 +1,16 @@
 package com.example.metalops.ui.navigation
 
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.runtime.Composable
+import androidx.navigation.compose.rememberNavController
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun MetalOpsApp() {
-    // 🟢 Cambia aquí según lo que quieras probar
-    val isPlanner = true // true = planner, false = agente
+    val navController = rememberNavController()
 
-    if (isPlanner) {
-        com.example.metalops.ui.planner.navigation.PlannerNavGraph()
-    } else {
-        com.example.metalops.ui.agente.navigation.AppNavGraph()
-    }
+    // 🚀 Punto de entrada de la aplicación
+    // Ahora siempre empieza con autenticación
+    RootNavGraph(navController = navController)
 }
