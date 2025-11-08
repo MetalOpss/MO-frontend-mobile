@@ -7,14 +7,14 @@ import androidx.navigation.navigation
 import com.example.metalops.ui.auth.LoginScreen
 import com.example.metalops.ui.auth.NewPasswordScreen
 import com.example.metalops.ui.auth.ResetPasswordScreen
-import com.example.metalops.ui.auth.RegisterScreen // 🔹 nuevo
+import com.example.metalops.ui.auth.RegisterScreen
 
 // Rutas de autenticación
 sealed class AuthRoutes(val route: String) {
     object Login : AuthRoutes("login")
     object ResetPassword : AuthRoutes("reset_password")
     object NewPassword : AuthRoutes("new_password")
-    object Register : AuthRoutes("register") // 🔹 nuevo
+    object Register : AuthRoutes("register")
 }
 
 fun NavGraphBuilder.authNavGraph(
@@ -25,43 +25,40 @@ fun NavGraphBuilder.authNavGraph(
         startDestination = AuthRoutes.Login.route,
         route = "auth"
     ) {
-        // Pantalla de Login
+        // LOGIN (NO toques LoginScreen: no requiere onRegisterClick)
         composable(AuthRoutes.Login.route) {
             LoginScreen(
-                onLoginClick = { email, password, role ->
-                    // Aquí podrías validar las credenciales con tu backend
+                onLoginClick = { _, _, role ->
                     onLoginSuccess(role)
                 },
                 onForgotPasswordClick = {
                     navController.navigate(AuthRoutes.ResetPassword.route)
-                },
-                onRegisterClick = { // 🔹 nuevo
-                    navController.navigate(AuthRoutes.Register.route)
                 }
             )
         }
 
-        // Pantalla de Registro 🔹 nuevo
+        // REGISTER (ajustado a tu firma)
         composable(AuthRoutes.Register.route) {
             RegisterScreen(
                 onRegisterSubmit = { name, role, email, password ->
-                    // Aquí iría la llamada real a backend para crear cuenta.
-                    // Por ahora: después de registrarse lo mandamos directo al login
-                    // y le podrías rellenar automáticamente los campos si quisieras.
+                    // TODO: aquí puedes llamar a tu API de registro si quieres.
+                    // Tras registrar, regresa a Login.
                     navController.navigate(AuthRoutes.Login.route) {
                         popUpTo("auth") { inclusive = false }
+                        launchSingleTop = true
                     }
                 },
                 onBackToLogin = {
-                    navController.popBackStack() // vuelve al login
+                    // Volver a Login sin nombres de parámetros (compatibilidad)
+                    navController.popBackStack(AuthRoutes.Login.route, false)
                 }
             )
         }
 
-        // Pantalla de Restablecer Contraseña
+        // RESET PASSWORD
         composable(AuthRoutes.ResetPassword.route) {
             ResetPasswordScreen(
-                onSendCodeClick = { email ->
+                onSendCodeClick = { _ ->
                     navController.navigate(AuthRoutes.NewPassword.route)
                 },
                 onCancelClick = {
@@ -70,12 +67,13 @@ fun NavGraphBuilder.authNavGraph(
             )
         }
 
-        // Pantalla de Nueva Contraseña
+        // NEW PASSWORD
         composable(AuthRoutes.NewPassword.route) {
             NewPasswordScreen(
-                onSendCodeClick = { newPassword, confirmPassword ->
+                onSendCodeClick = { _, _ ->
                     navController.navigate(AuthRoutes.Login.route) {
                         popUpTo("auth") { inclusive = false }
+                        launchSingleTop = true
                     }
                 }
             )

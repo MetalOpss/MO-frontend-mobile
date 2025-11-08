@@ -56,7 +56,7 @@ fun RegisterScreen(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.Start
         ) {
-            // ─── Logo + marca (igual que login) ────────────────────────────────
+            // Logo + marca
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(bottom = 8.dp)
@@ -76,7 +76,7 @@ fun RegisterScreen(
                 )
             }
 
-            // Título pantalla
+            // Título
             Text(
                 text = "Crear cuenta",
                 fontSize = 28.sp,
@@ -111,8 +111,7 @@ fun RegisterScreen(
                     unfocusedContainerColor = inputBackground,
                     disabledContainerColor = inputBackground,
                     focusedBorderColor = Color.Transparent,
-                    unfocusedBorderColor = Color.Transparent,
-                    cursorColor = Color.Black
+                    unfocusedBorderColor = Color.Transparent
                 ),
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions.Default.copy(
@@ -150,8 +149,7 @@ fun RegisterScreen(
                         unfocusedContainerColor = inputBackground,
                         disabledContainerColor = inputBackground,
                         focusedBorderColor = Color.Transparent,
-                        unfocusedBorderColor = Color.Transparent,
-                        cursorColor = Color.Black
+                        unfocusedBorderColor = Color.Transparent
                     ),
                     modifier = Modifier
                         .menuAnchor()
@@ -201,8 +199,7 @@ fun RegisterScreen(
                     unfocusedContainerColor = inputBackground,
                     disabledContainerColor = inputBackground,
                     focusedBorderColor = Color.Transparent,
-                    unfocusedBorderColor = Color.Transparent,
-                    cursorColor = Color.Black
+                    unfocusedBorderColor = Color.Transparent
                 ),
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions.Default.copy(
@@ -257,8 +254,7 @@ fun RegisterScreen(
                     unfocusedContainerColor = inputBackground,
                     disabledContainerColor = inputBackground,
                     focusedBorderColor = Color.Transparent,
-                    unfocusedBorderColor = Color.Transparent,
-                    cursorColor = Color.Black
+                    unfocusedBorderColor = Color.Transparent
                 ),
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions.Default.copy(

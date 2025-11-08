@@ -7,7 +7,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.rememberNavController
 import com.example.metalops.core.session.SessionManager
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -16,47 +15,47 @@ fun MetalOpsApp() {
     val context = LocalContext.current
     val sessionManager = remember { SessionManager(context) }
 
-    // estado donde guardamos el rol almacenado (o null si no había sesión)
     var storedRole by remember { mutableStateOf<String?>(null) }
     var isLoaded by remember { mutableStateOf(false) }
 
-    // leer DataStore una sola vez al inicio
+    // ✅ lee la sesión desde DataStore (propiedad correcta: userRole)
     LaunchedEffect(Unit) {
-        storedRole = sessionManager.userRoleFlow.first() // suspending read
+        storedRole = sessionManager.userRole.first()
         isLoaded = true
     }
 
-    // Mientras cargamos sesión, no mostramos todavía NavHost para evitar parpadeo
     if (!isLoaded) {
-        // Aquí podrías poner un SplashScreen composable si quieres estilo "MetalOps"
+        // aquí podrías mostrar un Splash composable si deseas
         return
     }
 
-    // Si ya había sesión guardada -> navega directo al módulo adecuado
+    // Si hay sesión previa, navega directo al módulo y limpia el back stack
     LaunchedEffect(storedRole) {
         when (storedRole) {
             "Planner" -> {
                 navController.navigate(RootRoute.Planner.route) {
-                    popUpTo(0) { inclusive = true }
+                    popUpTo(navController.graph.id) { inclusive = true }
+                    launchSingleTop = true
                 }
             }
             "Agente" -> {
                 navController.navigate(RootRoute.Agente.route) {
-                    popUpTo(0) { inclusive = true }
+                    popUpTo(navController.graph.id) { inclusive = true }
+                    launchSingleTop = true
                 }
             }
             "Operario" -> {
                 navController.navigate(RootRoute.Operario.route) {
-                    popUpTo(0) { inclusive = true }
+                    popUpTo(navController.graph.id) { inclusive = true }
+                    launchSingleTop = true
                 }
             }
             null -> {
-                // no había sesión -> se queda en auth/login
+                // sin sesión: se queda en auth/login
             }
         }
     }
 
-    // Montamos el grafo raíz y le pasamos sessionManager
     RootNavGraph(
         navController = navController,
         sessionManager = sessionManager
