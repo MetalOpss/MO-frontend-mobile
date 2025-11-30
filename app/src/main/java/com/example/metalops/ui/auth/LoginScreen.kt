@@ -1,254 +1,442 @@
 package com.example.metalops.ui.auth
 
-import androidx.compose.foundation.layout.*
+import android.os.Build
+import android.util.Log
+import android.widget.Toast
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import android.util.Log
-import com.example.metalops.data.remote.LoginRequest
-import com.example.metalops.data.remote.LoginResponse
-import com.example.metalops.data.remote.RetrofitInstance
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import android.widget.Toast
-import androidx.compose.ui.platform.LocalContext
+import coil.ImageLoader
+import coil.compose.AsyncImage
+import coil.decode.GifDecoder
+import coil.decode.ImageDecoderDecoder
+import coil.request.ImageRequest
+import com.example.metalops.R
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
-    onLoginClick: (String, String, String) -> Unit = { _, _, _ -> },
-    onForgotPasswordClick: () -> Unit = {}
+    onLoginClick: (email: String, password: String, role: String) -> Unit,
+    onForgotPasswordClick: () -> Unit // lo dejamos para no romper llamadas externas
 ) {
+    val context = LocalContext.current
+    val blue = Color(0xFF1976D2)
+
+    // Loader para GIF animado
+    val imageLoader = remember {
+        ImageLoader.Builder(context)
+            .components {
+                if (Build.VERSION.SDK_INT >= 28) {
+                    add(ImageDecoderDecoder.Factory())
+                } else {
+                    add(GifDecoder.Factory())
+                }
+            }
+            .build()
+    }
+
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
-    val context = LocalContext.current
+    var isLoading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    // Estado para el diálogo de "olvidé mi contraseña"
+    var showResetDialog by remember { mutableStateOf(false) }
+
+    val auth = FirebaseAuth.getInstance()
+    val db = FirebaseFirestore.getInstance()
+
+    fun doLogin() {
+        if (email.isBlank() || password.isBlank()) {
+            errorMessage = "Ingresa correo y contraseña"
+            return
+        }
+
+        isLoading = true
+        errorMessage = null
+
+        auth.signInWithEmailAndPassword(email, password)
+            .addOnSuccessListener { result ->
+                val user = result.user
+                if (user == null) {
+                    isLoading = false
+                    errorMessage = "Usuario inválido"
+                    return@addOnSuccessListener
+                }
+
+                val uid = user.uid
+                val currentEmail = user.email ?: email
+
+                db.collection("users")
+                    .document(uid)
+                    .get()
+                    .addOnSuccessListener { doc ->
+                        isLoading = false
+
+                        if (doc != null && doc.exists()) {
+                            val rawRole =
+                                doc.getString("rol")
+                                    ?: doc.getString("role")
+                                    ?: "agente"
+
+                            val roleFinal = when (rawRole.lowercase()) {
+                                "planner" -> "Planner"
+                                "operario" -> "Operario"
+                                "agente" -> "Agente"
+                                "admin" -> "Admin"
+                                else -> "Agente"
+                            }
+
+                            Log.d("LOGIN", "Usuario: $currentEmail, rol=$roleFinal")
+                            onLoginClick(currentEmail, password, roleFinal)
+                        } else {
+                            isLoading = false
+                            errorMessage = "No se encontró el usuario en Firestore"
+                            Log.e("LOGIN", "Documento /users/$uid no existe")
+                        }
+                    }
+                    .addOnFailureListener { e ->
+                        isLoading = false
+                        Log.e("LOGIN", "Error al obtener rol", e)
+                        errorMessage = "Error al obtener rol"
+                    }
+            }
+            .addOnFailureListener { e ->
+                isLoading = false
+                Log.e("LOGIN", "Error de autenticación", e)
+                errorMessage = "Correo o contraseña inválidos"
+            }
+    }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = Color(0xFFF5F5F5)
+        color = Color.White
     ) {
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(24.dp),
-            horizontalAlignment = Alignment.Start
+            contentAlignment = Alignment.Center
         ) {
-            Spacer(modifier = Modifier.height(60.dp))
-
-            // Logo y título
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(bottom = 8.dp)
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Default.Visibility,
-                    contentDescription = "MetalOps Logo",
-                    tint = Color(0xFF1976D2),
-                    modifier = Modifier.size(24.dp)
+
+                // GIF animado del logo
+                AsyncImage(
+                    model = ImageRequest.Builder(context)
+                        .data(R.drawable.metalops_anim)
+                        .crossfade(true)
+                        .build(),
+                    imageLoader = imageLoader,
+                    contentDescription = "Logo animado MetalOps",
+                    modifier = Modifier.size(180.dp)
                 )
-                Spacer(modifier = Modifier.width(8.dp))
+
                 Text(
                     text = "MetalOps",
-                    fontSize = 16.sp,
-                    color = Color(0xFF1976D2)
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold
                 )
-            }
 
-            Text(
-                text = "Inicia sesión",
-                fontSize = 32.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black,
-                modifier = Modifier.padding(bottom = 32.dp)
-            )
+                Text(
+                    text = "Inicia sesión",
+                    style = MaterialTheme.typography.titleLarge
+                )
 
-            // Selector de rol
-            var expanded by remember { mutableStateOf(false) }
-            var selectedRole by remember { mutableStateOf("Selecciona tu rol") }
-            val roles = listOf("Planner", "Operario", "Agente")
-
-            Text(
-                text = "Rol",
-                fontSize = 14.sp,
-                color = Color.Gray,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-
-            ExposedDropdownMenuBox(
-                expanded = expanded,
-                onExpandedChange = { expanded = !expanded },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 24.dp)
-            ) {
+                // CORREO
                 OutlinedTextField(
-                    value = selectedRole,
-                    onValueChange = {},
-                    readOnly = true,
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text("Correo") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                // CONTRASEÑA
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    label = { Text("Contraseña") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    visualTransformation = if (passwordVisible)
+                        VisualTransformation.None
+                    else
+                        PasswordVisualTransformation(),
+                    trailingIcon = {
+                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                            Icon(
+                                imageVector = if (passwordVisible)
+                                    Icons.Filled.Visibility
+                                else
+                                    Icons.Filled.VisibilityOff,
+                                contentDescription = "Toggle password"
+                            )
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                // OLVIDÉ MI CONTRASEÑA -> abre diálogo de cambio
+                TextButton(
+                    onClick = { showResetDialog = true },
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = blue
+                    )
+                ) {
+                    Text("Olvidé mi contraseña")
+                }
+
+                errorMessage?.let {
+                    Text(
+                        text = it,
+                        color = Color.Red
+                    )
+                }
+
+                // BOTÓN LOGIN
+                Button(
+                    onClick = { doLogin() },
+                    enabled = !isLoading,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = blue,
+                        contentColor = Color.White
+                    ),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .menuAnchor(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedBorderColor = Color.LightGray,
-                        focusedBorderColor = Color(0xFF1976D2)
-                    )
-                )
-                ExposedDropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false }
+                        .height(52.dp)
                 ) {
-                    roles.forEach { role ->
-                        DropdownMenuItem(
-                            text = { Text(role) },
-                            onClick = {
-                                selectedRole = role
-                                expanded = false
-                            }
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            color = Color.White,
+                            strokeWidth = 2.dp,
+                            modifier = Modifier.size(22.dp)
                         )
+                    } else {
+                        Text("Iniciar Sesión")
                     }
                 }
             }
 
-            // Campo de correo
-            Text(
-                text = "Correo",
-                fontSize = 14.sp,
-                color = Color.Gray,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
+            // ========= DIÁLOGO CAMBIAR CONTRASEÑA =========
+            if (showResetDialog) {
+                var resetEmail by remember { mutableStateOf(email) }
+                var currentPassword by remember { mutableStateOf("") }
+                var newPassword by remember { mutableStateOf("") }
+                var confirmPassword by remember { mutableStateOf("") }
+                var isProcessing by remember { mutableStateOf(false) }
+                var dialogError by remember { mutableStateOf<String?>(null) }
+                var showPasswords by remember { mutableStateOf(false) }
 
-            OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                placeholder = { Text("Escribe tu correo") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 24.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedBorderColor = Color.LightGray,
-                    focusedBorderColor = Color(0xFF1976D2)
-                ),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                singleLine = true
-            )
-
-            // Campo de contraseña
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Contraseña",
-                    fontSize = 14.sp,
-                    color = Color.Gray
-                )
-                TextButton(onClick = onForgotPasswordClick) {
-                    Text(
-                        text = "Olvidé mi contraseña",
-                        fontSize = 12.sp,
-                        color = Color(0xFF1976D2)
-                    )
-                }
-            }
-
-            OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
-                placeholder = { Text("Escribe tu contraseña") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 32.dp),
-                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                trailingIcon = {
-                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                        Icon(
-                            imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                            contentDescription = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña"
-                        )
-                    }
-                },
-                colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedBorderColor = Color.LightGray,
-                    focusedBorderColor = Color(0xFF1976D2)
-                ),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                singleLine = true
-            )
-
-            // Botón de inicio de sesión
-            Button(
-                onClick = {
-                    val request = LoginRequest(email, password)
-
-                    // 🚀 Llamada real al backend con Retrofit
-                    RetrofitInstance.api.login(request).enqueue(object : Callback<LoginResponse> {
-                        override fun onResponse(
-                            call: Call<LoginResponse>,
-                            response: Response<LoginResponse>
+                AlertDialog(
+                    onDismissRequest = {
+                        if (!isProcessing) showResetDialog = false
+                    },
+                    title = { Text("Cambiar contraseña") },
+                    text = {
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            if (response.isSuccessful) {
-                                val token = response.body()?.access_token
+                            Text(
+                                text = "Para cambiar tu contraseña, ingresa tu correo, tu contraseña actual y la nueva contraseña.",
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    color = Color.Gray
+                                )
+                            )
 
-                                if (!token.isNullOrEmpty()) {
-                                    Log.d("Login", "✅ Token recibido: $token")
+                            OutlinedTextField(
+                                value = resetEmail,
+                                onValueChange = { resetEmail = it },
+                                label = { Text("Correo") },
+                                singleLine = true,
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Email
+                                ),
+                                modifier = Modifier.fillMaxWidth()
+                            )
 
-                                    // (Opcional) Guardar token localmente
-                                    /*
-                                    val prefs = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
-                                    prefs.edit().putString("jwt_token", token).apply()
-                                    */
+                            OutlinedTextField(
+                                value = currentPassword,
+                                onValueChange = { currentPassword = it },
+                                label = { Text("Contraseña actual") },
+                                singleLine = true,
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Password
+                                ),
+                                visualTransformation = if (showPasswords)
+                                    VisualTransformation.None
+                                else
+                                    PasswordVisualTransformation(),
+                                modifier = Modifier.fillMaxWidth()
+                            )
 
-                                    // 🔹 Volver a la navegación original que ya funcionaba
-                                    when (selectedRole) {
-                                        "Planner" -> onLoginClick(email, password, "Planner")
-                                        "Agente" -> onLoginClick(email, password, "Agente")
-                                        "Operario" -> onLoginClick(email, password, "Operario")
-                                    }
-                                } else {
-                                    Toast.makeText(context, "Error: token no recibido", Toast.LENGTH_SHORT).show()
-                                }
-                            } else {
-                                Log.e("Login", "❌ Error en login: ${response.code()}")
-                                Toast.makeText(context, "Credenciales incorrectas", Toast.LENGTH_SHORT).show()
+                            OutlinedTextField(
+                                value = newPassword,
+                                onValueChange = { newPassword = it },
+                                label = { Text("Nueva contraseña") },
+                                singleLine = true,
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Password
+                                ),
+                                visualTransformation = if (showPasswords)
+                                    VisualTransformation.None
+                                else
+                                    PasswordVisualTransformation(),
+                                modifier = Modifier.fillMaxWidth()
+                            )
+
+                            OutlinedTextField(
+                                value = confirmPassword,
+                                onValueChange = { confirmPassword = it },
+                                label = { Text("Confirmar nueva contraseña") },
+                                singleLine = true,
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Password
+                                ),
+                                visualTransformation = if (showPasswords)
+                                    VisualTransformation.None
+                                else
+                                    PasswordVisualTransformation(),
+                                modifier = Modifier.fillMaxWidth()
+                            )
+
+                            TextButton(
+                                onClick = { showPasswords = !showPasswords }
+                            ) {
+                                Text(
+                                    if (showPasswords) "Ocultar contraseñas"
+                                    else "Mostrar contraseñas"
+                                )
+                            }
+
+                            dialogError?.let {
+                                Text(
+                                    text = it,
+                                    color = Color.Red,
+                                    style = MaterialTheme.typography.bodySmall
+                                )
                             }
                         }
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                val correo = resetEmail.trim()
+                                val oldPass = currentPassword
+                                val newPass = newPassword
+                                val confirmPass = confirmPassword
 
-                        override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
-                            Log.e("Login", "🚫 Error de conexión: ${t.message}")
-                            Toast.makeText(context, "Sin conexión con el servidor", Toast.LENGTH_SHORT).show()
+                                if (correo.isBlank() || oldPass.isBlank() ||
+                                    newPass.isBlank() || confirmPass.isBlank()
+                                ) {
+                                    dialogError = "Completa todos los campos"
+                                    return@TextButton
+                                }
+
+                                if (newPass != confirmPass) {
+                                    dialogError = "La nueva contraseña no coincide"
+                                    return@TextButton
+                                }
+
+                                isProcessing = true
+                                dialogError = null
+
+                                // 1) Verificamos credenciales
+                                auth.signInWithEmailAndPassword(correo, oldPass)
+                                    .addOnSuccessListener { result ->
+                                        val user = result.user
+                                        if (user == null) {
+                                            isProcessing = false
+                                            dialogError = "Usuario inválido"
+                                            return@addOnSuccessListener
+                                        }
+
+                                        // 2) Actualizamos la contraseña
+                                        user.updatePassword(newPass)
+                                            .addOnSuccessListener {
+                                                isProcessing = false
+                                                Toast.makeText(
+                                                    context,
+                                                    "Contraseña actualizada. Inicia sesión con tu nueva contraseña.",
+                                                    Toast.LENGTH_LONG
+                                                ).show()
+                                                // Opcional: cerrar sesión para volver al login limpio
+                                                auth.signOut()
+                                                showResetDialog = false
+                                            }
+                                            .addOnFailureListener { e ->
+                                                isProcessing = false
+                                                dialogError = e.localizedMessage
+                                                    ?: "Error al actualizar la contraseña"
+                                            }
+                                    }
+                                    .addOnFailureListener { e ->
+                                        isProcessing = false
+                                        dialogError = e.localizedMessage
+                                            ?: "Correo o contraseña actual incorrectos"
+                                    }
+                            },
+                            enabled = !isProcessing
+                        ) {
+                            if (isProcessing) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(18.dp),
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
+                                Text("Cambiar contraseña")
+                            }
                         }
-                    })
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF1976D2)
-                ),
-                shape = MaterialTheme.shapes.medium,
-                enabled = selectedRole != "Selecciona tu rol" && email.isNotEmpty() && password.isNotEmpty()
-            ) {
-                Text(
-                    text = "Iniciar Sesión",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium
+                    },
+                    dismissButton = {
+                        TextButton(
+                            onClick = {
+                                if (!isProcessing) showResetDialog = false
+                            }
+                        ) {
+                            Text("Cancelar")
+                        }
+                    }
                 )
             }
         }

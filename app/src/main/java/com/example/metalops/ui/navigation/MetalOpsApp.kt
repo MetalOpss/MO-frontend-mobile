@@ -1,63 +1,41 @@
-package com.example.metalops.ui.navigation
+package com.example.metalops
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.compose.runtime.*
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.rememberNavController
 import com.example.metalops.core.session.SessionManager
-import kotlinx.coroutines.flow.first
+import com.example.metalops.ui.navigation.RootNavGraph
+import com.example.metalops.ui.navigation.RootRoute
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun MetalOpsApp() {
     val navController = rememberNavController()
     val context = LocalContext.current
-    val sessionManager = remember { SessionManager(context) }
+    val sessionManager = SessionManager(context)
 
-    var storedRole by remember { mutableStateOf<String?>(null) }
-    var isLoaded by remember { mutableStateOf(false) }
+    val userRole by sessionManager.userRole.collectAsState(initial = null)
 
-    // ✅ lee la sesión desde DataStore (propiedad correcta: userRole)
-    LaunchedEffect(Unit) {
-        storedRole = sessionManager.userRole.first()
-        isLoaded = true
+    val startDestination = when (userRole) {
+        "Agente"   -> RootRoute.Agente.route
+        "Planner"  -> RootRoute.Planner.route
+        "Operario" -> RootRoute.Operario.route
+        else       -> RootRoute.Auth.route
     }
 
-    if (!isLoaded) {
-        // aquí podrías mostrar un Splash composable si deseas
-        return
-    }
-
-    // Si hay sesión previa, navega directo al módulo y limpia el back stack
-    LaunchedEffect(storedRole) {
-        when (storedRole) {
-            "Planner" -> {
-                navController.navigate(RootRoute.Planner.route) {
-                    popUpTo(navController.graph.id) { inclusive = true }
-                    launchSingleTop = true
-                }
-            }
-            "Agente" -> {
-                navController.navigate(RootRoute.Agente.route) {
-                    popUpTo(navController.graph.id) { inclusive = true }
-                    launchSingleTop = true
-                }
-            }
-            "Operario" -> {
-                navController.navigate(RootRoute.Operario.route) {
-                    popUpTo(navController.graph.id) { inclusive = true }
-                    launchSingleTop = true
-                }
-            }
-            null -> {
-                // sin sesión: se queda en auth/login
-            }
+    MaterialTheme {
+        Surface {
+            RootNavGraph(
+                navController = navController,
+                startDestination = startDestination,
+                sessionManager = sessionManager
+            )
         }
     }
-
-    RootNavGraph(
-        navController = navController,
-        sessionManager = sessionManager
-    )
 }

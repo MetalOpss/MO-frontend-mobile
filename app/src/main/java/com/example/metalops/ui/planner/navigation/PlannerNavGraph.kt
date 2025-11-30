@@ -3,29 +3,38 @@ package com.example.metalops.ui.planner.navigation
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.metalops.core.ui.components.FabMenu
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.metalops.core.ui.components.BottomBar
 import com.example.metalops.core.ui.components.BottomNavItem
-import com.example.metalops.ui.planner.screens.HomeDashboard
-import com.example.metalops.ui.planner.screens.PlannerOTsScreen
-import com.example.metalops.ui.planner.screens.PlannerTiempoScreen
-import androidx.compose.material3.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.AccessTime
+import com.example.metalops.core.ui.components.FabMenu
+import com.example.metalops.ui.planner.screens.ConfiguracionPlannerScreen
+import com.example.metalops.ui.planner.screens.NotificacionesPlannerScreen
+import com.example.metalops.ui.planner.screens.PerfilPlannerScreen
+import com.example.metalops.ui.planner.screens.PlannerHomeScreen
+import com.example.metalops.ui.planner.screens.PlannerOrderDetailScreen
+import com.example.metalops.ui.planner.screens.PlannerOrdersScreen
+import com.example.metalops.ui.planner.screens.PlannerTimelineScreen
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun PlannerNavGraph() {
+fun PlannerNavGraph(
+    rootNavController: NavHostController   // nav raíz (RootNavGraph)
+) {
+
+    // NavController interno del rol Planner
     val navController: NavHostController = rememberNavController()
 
     Scaffold(
@@ -67,39 +76,57 @@ fun PlannerNavGraph() {
         },
         floatingActionButtonPosition = FabPosition.End
     ) { innerPadding ->
+
         NavHost(
             navController = navController,
             startDestination = PlannerRoutes.DASHBOARD,
             modifier = Modifier.padding(innerPadding)
         ) {
-            // Pantalla inicial (home/dashboard del planner)
+
+            // ------- Pantallas principales (BottomBar) -------
             composable(PlannerRoutes.DASHBOARD) {
-                HomeDashboard(navController = navController)
+                PlannerHomeScreen(navController = navController)
             }
 
-            // OTs del planner
             composable(PlannerRoutes.OTS) {
-                PlannerOTsScreen(navController = navController)
+                PlannerOrdersScreen(navController = navController)
             }
 
-            // Tiempo del planner
             composable(PlannerRoutes.TIEMPO) {
-                PlannerTiempoScreen(navController = navController)
+                PlannerTimelineScreen(navController = navController)
             }
 
-            // Perfil (placeholder por ahora)
+            // ------- Detalle / planificación de una OT -------
+            composable(
+                route = "planner_order_detail/{orderId}",
+                arguments = listOf(
+                    navArgument("orderId") { type = NavType.StringType }
+                )
+            ) { backStackEntry ->
+                val orderId = backStackEntry.arguments?.getString("orderId") ?: return@composable
+
+                PlannerOrderDetailScreen(
+                    navController = navController,
+                    workOrderId = orderId,
+                    workOrderTitle = "",   // se usa como fallback dentro de la pantalla
+                    clientName = ""        // se usa como fallback dentro de la pantalla
+                )
+            }
+
+            // ------- Pantallas que abre el FAB -------
             composable(PlannerRoutes.PERFIL) {
-                Text("Perfil Planner (TODO)")
+                PerfilPlannerScreen(
+                    navController = navController,          // nav interno
+                    rootNavController = rootNavController   // nav raíz (para logout)
+                )
             }
 
-            // Notificaciones (placeholder)
             composable(PlannerRoutes.NOTIFICACIONES) {
-                Text("Notificaciones Planner (TODO)")
+                NotificacionesPlannerScreen(navController = navController)
             }
 
-            // Configuración (placeholder)
             composable(PlannerRoutes.CONFIG) {
-                Text("Configuración Planner (TODO)")
+                ConfiguracionPlannerScreen(navController = navController)
             }
         }
     }

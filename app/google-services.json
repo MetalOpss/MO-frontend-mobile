@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "918202607036",
+    "project_id": "metalops-mobile",
+    "storage_bucket": "metalops-mobile.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:918202607036:android:56bd609140ad3192da37b9",
+        "android_client_info": {
+          "package_name": "com.example.metalops"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCn-Zd9EugSJOa3MySM7cNtU-K6_deSZhA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

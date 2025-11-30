@@ -12,20 +12,28 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.example.metalops.core.ui.components.BottomBar
 import com.example.metalops.core.ui.components.BottomNavItem
 import com.example.metalops.core.ui.components.FabMenu
-import com.example.metalops.ui.operario.screens.OperariosScreen
-import androidx.compose.material3.Text
+import com.example.metalops.ui.operario.screens.AsignacionesScreen
+import com.example.metalops.ui.operario.screens.ConfiguracionOperarioScreen
+import com.example.metalops.ui.operario.screens.OperarioNotificationsScreen
+import com.example.metalops.ui.operario.screens.OperarioProfileScreen
+// ⬇️ CORRIGE ESTE IMPORT
+import com.example.metalops.ui.planner.screens.OperariosScreen
+import com.example.metalops.ui.operario.screens.TurnosOperarioScreen
 
-// Rutas específicas del rol Operario / Supervisor
 object OperarioRoutes {
-    const val OPERARIOS = "operario_operarios"        // lista de operarios (pantalla principal)
-    const val TURNOS = "operario_turnos"              // gestión de turnos / tiempos
-    const val ASIGNACIONES = "operario_asignacion"    // OTs asignadas
+    const val OPERARIOS = "operario_operarios"
+    const val ASIGNACIONES = "operario_asignacion"
+    const val TURNOS = "operario_turnos"
+
+    const val PERFIL = "operario_perfil"
+    const val NOTIFICACIONES = "operario_notificaciones"
+    const val CONFIG = "operario_config"
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -34,7 +42,6 @@ fun OperarioNavGraph() {
     val navController: NavHostController = rememberNavController()
 
     Scaffold(
-        // Bottom bar reutilizando BottomBar genérica
         bottomBar = {
             BottomBar(
                 navController = navController,
@@ -58,18 +65,16 @@ fun OperarioNavGraph() {
                 startRoute = OperarioRoutes.OPERARIOS
             )
         },
-
-        // Menú flotante morado (reutilizando FabMenu)
         floatingActionButton = {
             FabMenu(
                 onNotificacionesClick = {
-                    // navController.navigate("operario_notificaciones")
+                    navController.navigate(OperarioRoutes.NOTIFICACIONES)
                 },
                 onPerfilClick = {
-                    // navController.navigate("operario_perfil")
+                    navController.navigate(OperarioRoutes.PERFIL)
                 },
                 onConfiguracionClick = {
-                    // navController.navigate("operario_config")
+                    navController.navigate(OperarioRoutes.CONFIG)
                 }
             )
         },
@@ -80,19 +85,28 @@ fun OperarioNavGraph() {
             startDestination = OperarioRoutes.OPERARIOS,
             modifier = Modifier.padding(innerPadding)
         ) {
-            // Pantalla principal: lista de operarios
             composable(OperarioRoutes.OPERARIOS) {
                 OperariosScreen(navController = navController)
             }
 
-            // Asignaciones (placeholder por ahora)
             composable(OperarioRoutes.ASIGNACIONES) {
-                Text("Asignaciones de OT (TODO)")
+                AsignacionesScreen(navController = navController)
             }
 
-            // Turnos (placeholder por ahora)
             composable(OperarioRoutes.TURNOS) {
-                Text("Gestión de turnos / tiempo (TODO)")
+                TurnosOperarioScreen(navController = navController)
+            }
+
+            composable(OperarioRoutes.PERFIL) {
+                OperarioProfileScreen(navController = navController)
+            }
+
+            composable(OperarioRoutes.NOTIFICACIONES) {
+                OperarioNotificationsScreen(navController = navController)
+            }
+
+            composable(OperarioRoutes.CONFIG) {
+                ConfiguracionOperarioScreen(navController = navController)
             }
         }
     }
