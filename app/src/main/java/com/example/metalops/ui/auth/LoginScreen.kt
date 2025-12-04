@@ -48,6 +48,8 @@ import coil.request.ImageRequest
 import com.example.metalops.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
 
 @Composable
 fun LoginScreen(
@@ -189,7 +191,11 @@ fun LoginScreen(
                     label = { Text("Correo") },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .semantics {
+                            contentDescription = "login_email"
+                        }
                 )
 
                 // CONTRASEÑA
@@ -214,7 +220,11 @@ fun LoginScreen(
                             )
                         }
                     },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .semantics {
+                            contentDescription = "login_password"
+                        }
                 )
 
                 // OLVIDÉ MI CONTRASEÑA -> abre diálogo de cambio
@@ -245,6 +255,9 @@ fun LoginScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(52.dp)
+                        .semantics {
+                            contentDescription = "login_button"
+                        }
                 ) {
                     if (isLoading) {
                         CircularProgressIndicator(
@@ -258,7 +271,7 @@ fun LoginScreen(
                 }
             }
 
-            // ========= DIÁLOGO CAMBIAR CONTRASEÑA =========
+// ========= DIÁLOGO CAMBIAR CONTRASEÑA =========
             if (showResetDialog) {
                 var resetEmail by remember { mutableStateOf(email) }
                 var currentPassword by remember { mutableStateOf("") }
@@ -284,6 +297,7 @@ fun LoginScreen(
                                 )
                             )
 
+                            // CORREO
                             OutlinedTextField(
                                 value = resetEmail,
                                 onValueChange = { resetEmail = it },
@@ -292,9 +306,14 @@ fun LoginScreen(
                                 keyboardOptions = KeyboardOptions(
                                     keyboardType = KeyboardType.Email
                                 ),
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .semantics {
+                                        contentDescription = "dialog_reset_email"
+                                    }
                             )
 
+                            // CONTRASEÑA ACTUAL
                             OutlinedTextField(
                                 value = currentPassword,
                                 onValueChange = { currentPassword = it },
@@ -307,9 +326,14 @@ fun LoginScreen(
                                     VisualTransformation.None
                                 else
                                     PasswordVisualTransformation(),
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .semantics {
+                                        contentDescription = "dialog_current_password"
+                                    }
                             )
 
+                            // NUEVA CONTRASEÑA
                             OutlinedTextField(
                                 value = newPassword,
                                 onValueChange = { newPassword = it },
@@ -322,9 +346,14 @@ fun LoginScreen(
                                     VisualTransformation.None
                                 else
                                     PasswordVisualTransformation(),
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .semantics {
+                                        contentDescription = "dialog_new_password"
+                                    }
                             )
 
+                            // CONFIRMAR NUEVA CONTRASEÑA
                             OutlinedTextField(
                                 value = confirmPassword,
                                 onValueChange = { confirmPassword = it },
@@ -337,11 +366,19 @@ fun LoginScreen(
                                     VisualTransformation.None
                                 else
                                     PasswordVisualTransformation(),
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .semantics {
+                                        contentDescription = "dialog_confirm_password"
+                                    }
                             )
 
+                            // BOTÓN MOSTRAR / OCULTAR CONTRASEÑAS
                             TextButton(
-                                onClick = { showPasswords = !showPasswords }
+                                onClick = { showPasswords = !showPasswords },
+                                modifier = Modifier.semantics {
+                                    contentDescription = "dialog_toggle_show_passwords"
+                                }
                             ) {
                                 Text(
                                     if (showPasswords) "Ocultar contraseñas"
@@ -359,6 +396,7 @@ fun LoginScreen(
                         }
                     },
                     confirmButton = {
+                        // BOTÓN CONFIRMAR CAMBIO
                         TextButton(
                             onClick = {
                                 val correo = resetEmail.trim()
@@ -416,7 +454,10 @@ fun LoginScreen(
                                             ?: "Correo o contraseña actual incorrectos"
                                     }
                             },
-                            enabled = !isProcessing
+                            enabled = !isProcessing,
+                            modifier = Modifier.semantics {
+                                contentDescription = "dialog_confirm_change_password"
+                            }
                         ) {
                             if (isProcessing) {
                                 CircularProgressIndicator(
@@ -429,9 +470,13 @@ fun LoginScreen(
                         }
                     },
                     dismissButton = {
+                        // BOTÓN CANCELAR
                         TextButton(
                             onClick = {
                                 if (!isProcessing) showResetDialog = false
+                            },
+                            modifier = Modifier.semantics {
+                                contentDescription = "dialog_cancel_change_password"
                             }
                         ) {
                             Text("Cancelar")
